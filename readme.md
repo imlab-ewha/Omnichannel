@@ -1,11 +1,11 @@
 # An omnichannel strategy development framework leveraging customer opinion divergence via large language models and explainable AI
-- This is the official repository of "An omnichannel strategy development framework leveraging customer opinion divergence via large language models and explainable AI".
+This is the official repository of "An omnichannel strategy development framework leveraging customer opinion divergence via large language models and explainable AI".
 
 ## Framework
 ![Framework](assets/framework.png)
 
 ## Set up
-- Please follow the steps below to perform the installation：
+Please follow the steps below to perform the installation：
 
 **1. Create virtual environment**
 ```bash
@@ -19,13 +19,17 @@ pip install -r requirements.txt
 ```
 
 **3. Configure API key**
-- Create a `.env` file in the `omnichannel/` directory:
+Create a `.env` file in the `omnichannel/` directory:
 ```
-OPENAI_API_KEY=sk-...
+OPENAI_API_KEY=your_openai_api_key_here
 ```
+> **Note:** An OpenAI API key is required for aspect normalization (Step 2) and aspect type determination (Step 8). You can obtain one at [platform.openai.com](https://platform.openai.com).
 
-**4. Download Model Weights**
-- Download the pre-trained model weights from [#](https://doi.org/xxxx) and place them in the `models/` directory.
+**4. Download model weights**
+Download `model.pt` from [imlab-ewha/KcELECTRA-base-v2022-Aspect-Extraction](https://huggingface.co/imlab-ewha/KcELECTRA-base-v2022-Aspect-Extraction) and place it at:
+`code/frequent_aspect_mining/aspect_extraction/models/model.pt`
+
+The base encoder ([beomi/KcELECTRA-base-v2022](https://huggingface.co/beomi/KcELECTRA-base-v2022)) will be downloaded automatically on first run.
 
 ## Quick Start
 - `main.py` runs all steps end-to-end in order.

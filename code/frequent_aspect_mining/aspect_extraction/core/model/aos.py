@@ -8,14 +8,14 @@ predict aspect spans, opinion spans, and sentiment relations.
 
 import torch
 import torch.nn
-from transformers import AutoModel
+from transformers import AutoConfig, AutoModel
 
 
 class MultiInferBert(torch.nn.Module):
     def __init__(self, args):
         super(MultiInferBert, self).__init__()
         self.args = args
-        self.bert = AutoModel.from_pretrained(args.bert_model_path)
+        self.bert = AutoModel.from_config(AutoConfig.from_pretrained(args.bert_model_path))
         self.cls_linear = torch.nn.Linear(args.bert_feature_dim * 2, args.class_num)
         self.feature_linear = torch.nn.Linear(args.bert_feature_dim * 2 + args.class_num * 3, args.bert_feature_dim * 2)
         self.dropout_output = torch.nn.Dropout(p=args.dropout)

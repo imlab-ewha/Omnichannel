@@ -56,7 +56,7 @@ def _model_config(device: str) -> types.SimpleNamespace:
     """Return a SimpleNamespace with all parameters required by MultiInferBert."""
     return types.SimpleNamespace(
         model_dir        = str(_MODEL_DIR / "model.pt"),
-        bert_model_path  = str(_MODEL_DIR / "KcELECTRA-base-v2022.pt"),
+        bert_model_path  = "beomi/KcELECTRA-base-v2022",
         max_sequence_len = _MAX_SEQ_LEN,
         bert_feature_dim = _BERT_FEAT_DIM,
         class_num        = _CLASS_NUM,
@@ -78,7 +78,7 @@ class ReviewProcessor:
 
         self.model = MultiInferBert(config).to(device)
         self.model.load_state_dict(torch.load(config.model_dir, map_location=device), strict=False)
-        self.tokenizer = AutoTokenizer.from_pretrained(str(_MODEL_DIR))
+        self.tokenizer = AutoTokenizer.from_pretrained("beomi/KcELECTRA-base-v2022")
         self.kiwi = Kiwi()
         logger.info("ReviewProcessor ready.")
 
