@@ -30,7 +30,7 @@ load_dotenv()
 _SCRIPT_DIR         = Path(__file__).resolve().parent
 _RESOURCE_DIR       = _SCRIPT_DIR.parents[2] / "resource"
 _DEFAULT_ASPECTS    = _RESOURCE_DIR / "3_aspect_selection" / "top_aspects.csv"
-_DEFAULT_OUTPUT     = _RESOURCE_DIR / "6_aspect_type" / "aspect_types.csv"
+_DEFAULT_OUTPUT     = _RESOURCE_DIR / "8_aspect_type" / "aspect_types.csv"
 
 # ---------------------------------------------------------------------------
 # Constants

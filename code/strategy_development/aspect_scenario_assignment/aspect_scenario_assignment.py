@@ -34,9 +34,9 @@ warnings.filterwarnings("ignore")
 
 _SCRIPT_DIR         = Path(__file__).resolve().parent
 _RESOURCE_DIR       = _SCRIPT_DIR.parents[2] / "resource"
-_DEFAULT_SHAP       = _RESOURCE_DIR / "5_aspect_contribution" / "shap.csv"
-_DEFAULT_TYPES      = _RESOURCE_DIR / "6_aspect_type" / "aspect_types.csv"
-_DEFAULT_OUTPUT_DIR = _RESOURCE_DIR / "7_scenario"
+_DEFAULT_SHAP       = _RESOURCE_DIR / "7_shap" / "shap.csv"
+_DEFAULT_TYPES      = _RESOURCE_DIR / "8_aspect_type" / "aspect_types.csv"
+_DEFAULT_OUTPUT_DIR = _RESOURCE_DIR / "9_scenario"
 _EPSILON            = 0.0
 
 _SCENARIO_MAP = {

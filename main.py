@@ -17,11 +17,11 @@ Pipeline steps:
   2. Aspect normalization      → resource/2_aspect_normalization/
   3. Aspect selection          → resource/3_aspect_selection/
   4. Sentiment analysis        → resource/4_sentiment_analysis/
-  5. Overall satisfaction      → resource/4_sentiment_analysis/
-  6. Model training            → resource/5_aspect_contribution/
-  7. SHAP analysis             → resource/5_aspect_contribution/
-  8. Aspect type determination → resource/6_aspect_type/
-  9. Scenario assignment       → resource/7_scenario/
+  5. Overall satisfaction      → resource/5_overall_satisfaction/
+  6. Model training            → resource/6_aspect_contribution/
+  7. SHAP analysis             → resource/7_shap/
+  8. Aspect type determination → resource/8_aspect_type/
+  9. Scenario assignment       → resource/9_scenario/
 """
 
 import argparse
@@ -85,38 +85,38 @@ def build_steps(input_csv: Path, r: Path) -> list[tuple[str, Path, str, list[str
             _CODE_DIR / "aspect_contribution_pairs_mining" / "overall_satisfaction_score_combination",
             "overall_satisfaction_score_combination.py",
             ["--input", str(r / "4_sentiment_analysis" / "sentiment_analysis.csv"),
-             "--output-dir", str(r / "4_sentiment_analysis")],
+             "--output-dir", str(r / "5_overall_satisfaction")],
         ),
         (
             "Step 6 — Model training",
             _CODE_DIR / "aspect_contribution_pairs_mining" / "aspect_contribution_calculation",
             "model_training.py",
-            ["--satisfaction", str(r / "4_sentiment_analysis" / "overall_satisfaction.csv"),
+            ["--satisfaction", str(r / "5_overall_satisfaction" / "overall_satisfaction.csv"),
              "--top-aspects",  str(r / "3_aspect_selection" / "top_aspects.csv"),
              "--reviews",      str(r / "3_aspect_selection" / "top_aspect_reviews.csv"),
-             "--output-dir",   str(r / "5_aspect_contribution")],
+             "--output-dir",   str(r / "6_aspect_contribution")],
         ),
         (
             "Step 7 — SHAP analysis",
             _CODE_DIR / "aspect_contribution_pairs_mining" / "aspect_contribution_calculation",
             "aspect_contribution_calculation.py",
-            ["--model-dir",  str(r / "5_aspect_contribution" / "models"),
-             "--output-dir", str(r / "5_aspect_contribution")],
+            ["--model-dir",  str(r / "6_aspect_contribution" / "models"),
+             "--output-dir", str(r / "7_shap")],
         ),
         (
             "Step 8 — Aspect type determination",
             _CODE_DIR / "strategy_development" / "aspect_type_determination",
             "aspect_type_determination.py",
             ["--aspects", str(r / "3_aspect_selection" / "top_aspects.csv"),
-             "--output",  str(r / "6_aspect_type" / "aspect_types.csv")],
+             "--output",  str(r / "8_aspect_type" / "aspect_types.csv")],
         ),
         (
             "Step 9 — Scenario assignment",
             _CODE_DIR / "strategy_development" / "aspect_scenario_assignment",
             "aspect_scenario_assignment.py",
-            ["--shap",       str(r / "5_aspect_contribution" / "shap.csv"),
-             "--types",      str(r / "6_aspect_type" / "aspect_types.csv"),
-             "--output-dir", str(r / "7_scenario")],
+            ["--shap",       str(r / "7_shap" / "shap.csv"),
+             "--types",      str(r / "8_aspect_type" / "aspect_types.csv"),
+             "--output-dir", str(r / "9_scenario")],
         ),
     ]
 
@@ -135,6 +135,6 @@ if __name__ == "__main__":
     for label, script_dir, script, extra_args in steps:
         run_step(label, script_dir, script, extra_args)
 
-    output = args.resource_dir / "7_scenario" / "scenario_assignment.csv"
+    output = args.resource_dir / "9_scenario" / "scenario_assignment.csv"
     print(f"\nPipeline complete.")
     print(f"Final output: {output}")

@@ -34,7 +34,7 @@ Download `model.pt` from [imlab-ewha/KcELECTRA-base-v2022-Aspect-Extraction](htt
 ## Quick Start
 - `main.py` runs all steps end-to-end in order.
 - Each step reads from and writes to the `resource/` directory, so no arguments are needed.
-- Final output: `resource/8_scenario/scenario_assignment.csv`.
+- Final output: `resource/9_scenario/scenario_assignment.csv`.
 - If a step fails, the pipeline stops immediately and prints which step failed.
 - We provide a sample Korean review dataset for inference testing at `resource/example_review.csv`.
 
@@ -59,13 +59,12 @@ python main.py
 ### Step 2 — Aspect Normalization
 
 - `code/frequent_aspect_mining/aspect_normalization/aspect_normalization.py`
-
 - Normalizes raw aspect expressions into standardized forms via the OpenAI Chat API.
 
 | Argument | Default | Description |
 |---|---|---|
-| `--input` | `resource/2_aspect_extraction/aspect_extraction.csv` | Input CSV |
-| `--output-dir` | `resource/3_aspect_normalization/` | Output directory |
+| `--input` | `resource/1_aspect_extraction/aspect_extraction.csv` | Input CSV |
+| `--output-dir` | `resource/2_aspect_normalization/` | Output directory |
 | `--model` | `gpt-4o-mini` | OpenAI model |
 | `--temperature` | `0.0` | Sampling temperature |
 | `--seed` | `42` | Random seed |
@@ -75,84 +74,77 @@ python main.py
 ### Step 3 — Aspect Selection
 
 - `code/frequent_aspect_mining/aspect_selection/aspect_selection.py`
-
 - Selects the top-k most frequent normalized aspects.
 
 | Argument | Default | Description |
 |---|---|---|
-| `--input` | `resource/3_aspect_normalization/` | Normalization output dir (picks latest CSV) |
-| `--output-dir` | `resource/4_aspect_selection/` | Output directory |
+| `--input` | `resource/2_aspect_normalization/` | Normalization output dir (picks latest CSV) |
+| `--output-dir` | `resource/3_aspect_selection/` | Output directory |
 | `--top-k` | `10` | Number of aspects to select |
 
 
 ### Step 4 — Sentiment Analysis
 
-- `code/aspect_contribution_pairs_mining/overall_satisfaction_score_calculation/sentiment_analysis.py`
-
+- `code/aspect_contribution_pairs_mining/overall_satisfaction_score_combination/sentiment_analysis.py`
 - Classifies each review as positive / negative using a GRU model.
 
 | Argument | Default | Description |
 |---|---|---|
-| `--input` | `resource/1_preprocessing/example_review.csv` | Input review CSV |
-| `--output-dir` | `resource/5_sentiment_analysis/` | Output directory |
+| `--input` | `resource/example_review.csv` | Input review CSV |
+| `--output-dir` | `resource/4_sentiment_analysis/` | Output directory |
 
-### Step 5 — Overall Satisfaction Score
+### Step 5 — Overall Satisfaction Score Combination
 
-`code/aspect_contribution_pairs_mining/overall_satisfaction_score_calculation/overall_satisfaction_score_combination.py`
-
-- Combines rating and sentiment probability into a overall satisfaction score (Eq. 1).
+- `code/aspect_contribution_pairs_mining/overall_satisfaction_score_combination/overall_satisfaction_score_combination.py`
+- Combines rating and sentiment probability into a overall satisfaction score.
 
 | Argument | Default | Description |
 |---|---|---|
-| `--input` | `resource/5_sentiment_analysis/sentiment_analysis.csv` | Input CSV |
-| `--output-dir` | `resource/5_sentiment_analysis/` | Output directory |
+| `--input` | `resource/4_sentiment_analysis/sentiment_analysis.csv` | Input CSV |
+| `--output-dir` | `resource/5_overall_satisfaction/` | Output directory |
 
 
-### Step 6 — Random Forest
+### Step 6 — Aspect Contribution Calculation (Random Forest)
 
 - `code/aspect_contribution_pairs_mining/aspect_contribution_calculation/random_forest.py`
-
 - Trains a Random Forest regressor per channel (online / offline) to predict overall satisfaction from binary aspect-presence features.
 
 | Argument | Default | Description |
 |---|---|---|
-| `--satisfaction` | `resource/5_sentiment_analysis/overall_satisfaction.csv` | Satisfaction scores |
-| `--top-aspects` | `resource/4_aspect_selection/top_aspects.csv` | Top aspect list |
-| `--reviews` | `resource/4_aspect_selection/top_aspect_reviews.csv` | Aspect-review pairs |
+| `--satisfaction` | `resource/5_overall_satisfaction/overall_satisfaction.csv` | Overall satisfaction scores |
+| `--top-aspects` | `resource/3_aspect_selection/top_aspects.csv` | Top-k aspects list |
+| `--reviews` | `resource/3_aspect_selection/top_aspect_reviews.csv` | Aspect-review pairs |
 | `--output-dir` | `resource/6_aspect_contribution/` | Output directory |
 
-### Step 7 — SHAP Analysis
+### Step 7 — Aspect Contribution Calculation (SHAP Analysis)
 
-`code/aspect_contribution_pairs_mining/aspect_contribution_calculation/shap_analysis.py`
-
-Computes SHAP values from trained RF models and outputs per-aspect mean SHAP per channel.
+- `code/aspect_contribution_pairs_mining/aspect_contribution_calculation/shap_analysis.py`
+- Computes SHAP values from trained RF models and outputs per-aspect mean SHAP per channel.
 
 | Argument | Default | Description |
 |---|---|---|
 | `--model-dir` | `resource/6_aspect_contribution/models/` | Directory with `{channel}_rf.pkl` files |
-| `--output-dir` | `resource/6_aspect_contribution/` | Output directory |
+| `--output-dir` | `resource/7_shap/` | Output directory |
 
 Output columns: `aspect`, `online_mean_abs_shap`, `online_mean_shap`, `offline_mean_abs_shap`, `offline_mean_shap`
 
 ### Step 8 — Aspect Type Determination
 
-`code/strategy_development/aspect_type_determination/aspect_type_determination.py`
-
-Classifies each aspect as **search** (evaluable before purchase) or **experience** (evaluable only after use) via the OpenAI Chat API.
+- `code/strategy_development/aspect_type_determination/aspect_type_determination.py`
+- Classifies each aspect as **search** (evaluable before purchase) or **experience** (evaluable only after use) via the OpenAI Chat API.
 
 | Argument | Default | Description |
 |---|---|---|
-| `--aspects` | `resource/4_aspect_selection/top_aspects.csv` | Aspect list CSV |
-| `--output` | `resource/7_aspect_type/aspect_types.csv` | Output CSV |
+| `--aspects` | `resource/3_aspect_selection/top_aspects.csv` | Top-k aspects list |
+| `--output` | `resource/8_aspect_type/aspect_types.csv` | Output CSV |
 | `--model` | `gpt-4o-mini` | OpenAI model |
 | `--temperature` | `0.0` | Sampling temperature |
 | `--seed` | `42` | Random seed |
 
 ### Step 9 — Scenario Assignment
 
-`code/strategy_development/aspect_scenario_assignment/assignment.py`
-
-Assigns an omnichannel strategy scenario (S1–S4) to each aspect.
+- `code/strategy_development/aspect_scenario_assignment/aspect_scenario_assignment.py`
+- Assigns an omnichannel strategy scenario (S1–S4) to each aspect.
 
 | Scenario | Type | Dominant Channel |
 |---|---|---|
@@ -163,8 +155,8 @@ Assigns an omnichannel strategy scenario (S1–S4) to each aspect.
 
 | Argument | Default | Description |
 |---|---|---|
-| `--shap` | `resource/6_aspect_contribution/shap_results.csv` | SHAP results |
-| `--types` | `resource/7_aspect_type/aspect_types.csv` | Aspect type results |
-| `--output-dir` | `resource/8_scenario/` | Output directory |
+| `--shap` | `resource/7_shap/shap.csv` | SHAP results |
+| `--types` | `resource/8_aspect_type/aspect_types.csv` | Aspect type results |
+| `--output-dir` | `resource/9_scenario/` | Output directory |
 | `--epsilon` | `0.0` | Min \|online − offline\| SHAP difference to assign a scenario |
 

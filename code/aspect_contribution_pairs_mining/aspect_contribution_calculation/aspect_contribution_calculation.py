@@ -28,8 +28,8 @@ warnings.filterwarnings("ignore")
 
 _SCRIPT_DIR         = Path(__file__).resolve().parent
 _RESOURCE_DIR       = _SCRIPT_DIR.parents[2] / "resource"
-_DEFAULT_MODEL_DIR  = _RESOURCE_DIR / "5_aspect_contribution" / "models"
-_DEFAULT_OUTPUT_DIR = _RESOURCE_DIR / "5_aspect_contribution"
+_DEFAULT_MODEL_DIR  = _RESOURCE_DIR / "6_aspect_contribution" / "models"
+_DEFAULT_OUTPUT_DIR = _RESOURCE_DIR / "7_shap"
 
 
 def parse_args() -> argparse.Namespace:

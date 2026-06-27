@@ -25,7 +25,7 @@ import pandas as pd
 _SCRIPT_DIR         = Path(__file__).resolve().parent
 _RESOURCE_DIR       = _SCRIPT_DIR.parents[2] / "resource"
 _DEFAULT_INPUT      = _RESOURCE_DIR / "4_sentiment_analysis" / "sentiment_analysis.csv"
-_DEFAULT_OUTPUT_DIR = _RESOURCE_DIR / "4_sentiment_analysis"
+_DEFAULT_OUTPUT_DIR = _RESOURCE_DIR / "5_overall_satisfaction"
 
 _RMAX = 4
 

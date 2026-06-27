@@ -30,10 +30,10 @@ warnings.filterwarnings("ignore")
 
 _SCRIPT_DIR           = Path(__file__).resolve().parent
 _RESOURCE_DIR         = _SCRIPT_DIR.parents[2] / "resource"
-_DEFAULT_SATISFACTION = _RESOURCE_DIR / "4_sentiment_analysis" / "overall_satisfaction.csv"
+_DEFAULT_SATISFACTION = _RESOURCE_DIR / "5_overall_satisfaction" / "overall_satisfaction.csv"
 _DEFAULT_TOP_ASPECTS  = _RESOURCE_DIR / "3_aspect_selection" / "top_aspects.csv"
 _DEFAULT_REVIEWS      = _RESOURCE_DIR / "3_aspect_selection" / "top_aspect_reviews.csv"
-_DEFAULT_OUTPUT_DIR   = _RESOURCE_DIR / "5_aspect_contribution"
+_DEFAULT_OUTPUT_DIR   = _RESOURCE_DIR / "6_aspect_contribution"
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
