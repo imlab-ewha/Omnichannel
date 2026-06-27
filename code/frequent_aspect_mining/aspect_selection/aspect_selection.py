@@ -9,7 +9,7 @@ and saves two output files:
 Usage:
     python aspect_selection.py [--input PATH] [--output-dir DIR] [--top-k N]
 
-If --input is a directory, the most recently modified normalization_results_*.csv
+If --input is a directory, the most recently modified normalization_*.csv
 inside that directory is used automatically.
 """
 
@@ -35,7 +35,7 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Normalization result CSV, or the directory containing it "
             "(default: resource/2_aspect_normalization/). "
-            "If a directory is given, the latest normalization_results_*.csv is used."
+            "If a directory is given, the latest normalization_*.csv is used."
         ),
     )
     parser.add_argument(

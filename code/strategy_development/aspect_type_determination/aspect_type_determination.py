@@ -1,3 +1,22 @@
+"""
+aspect_type_determination.py
+
+Classifies each normalized aspect as "search" or "experience" based on
+whether it can be evaluated before or only after product use.
+Uses the OpenAI Chat API with one call per aspect.
+
+Inputs:
+  --aspects   resource/3_aspect_selection/top_aspects.csv
+
+Outputs:
+  resource/6_aspect_type/aspect_types.csv
+
+Usage:
+    python aspect_type_determination.py [--aspects PATH] [--output PATH]
+                                        [--model MODEL] [--temperature T]
+                                        [--seed N]
+"""
+
 import argparse
 import json
 import os

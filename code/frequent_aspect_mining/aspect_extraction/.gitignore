@@ -1,7 +1,0 @@
-# Runtime logs
-resources/log/*.log
-
-# Python cache
-__pycache__/
-*.pyc
-*.pyo

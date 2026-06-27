@@ -1,12 +1,16 @@
-import math
+"""
+metric.py
 
+Utility functions for decoding AOS model outputs into span lists and
+Aspect-Opinion-Sentiment triplets used during inference.
+"""
 
 def get_spans(tags, length, token_range, span_type, ignore_index=-1):
     """Find contiguous token spans of the given span_type in the tag matrix."""
     spans = []
     start = -1
     for i in range(length):
-        l, r = token_range[i]
+        l, _ = token_range[i]
         if tags[l][l] == ignore_index:
             continue
         elif tags[l][l] == span_type:

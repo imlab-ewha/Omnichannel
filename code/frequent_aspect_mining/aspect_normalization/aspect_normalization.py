@@ -1,3 +1,23 @@
+"""
+aspect_normalization.py
+
+Normalizes raw aspect expressions from customer reviews into standardized
+forms using the OpenAI Chat API with in-context learning.
+
+Inputs:
+  --input       resource/1_aspect_extraction/aspect_extraction.csv
+
+Outputs:
+  resource/2_aspect_normalization/normalization_{timestamp}.csv
+  resource/2_aspect_normalization/normalization_{timestamp}.json
+
+Usage:
+    python aspect_normalization.py [--input PATH] [--output-dir DIR]
+                                   [--model MODEL] [--chunk-size N]
+                                   [--temperature T] [--seed N]
+                                   [--sleep-interval S]
+"""
+
 import argparse
 import json
 import os

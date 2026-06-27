@@ -1,3 +1,11 @@
+"""
+aos.py
+
+MultiInferBert model for Aspect-Opinion-Sentiment (AOS) triplet extraction.
+Applies iterative multi-hop inference over BERT token-pair features to jointly
+predict aspect spans, opinion spans, and sentiment relations.
+"""
+
 import torch
 import torch.nn
 from transformers import AutoModel
