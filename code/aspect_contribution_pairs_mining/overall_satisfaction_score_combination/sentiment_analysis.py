@@ -36,7 +36,6 @@ _TOKENIZER_PATH = _SCRIPT_DIR / "models" / "tokenizer.pkl"
 
 _MAX_LEN = 80
 
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run sentiment analysis on preprocessed Korean product reviews.",
@@ -56,27 +55,14 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-# def _predict(text: str, model, tokenizer, mecab: MeCab) -> tuple[str, float]:
-#     text = re.sub(r"[^ㄱ-ㅎㅏ-ㅣ가-힣 ]", "", str(text))
-#     tokens = [token.surface for token in mecab.parse(text)]
-#     encoded = tokenizer.texts_to_sequences([tokens])
-#     padded = pad_sequences(encoded, maxlen=_MAX_LEN)
-#     score = round(float(model.predict(padded, verbose=0)), 4)
-#     sentiment = "positive" if score > 0.5 else "negative"
-#     return sentiment, score
-
-_STOPWORDS = ['도','는','다','의','가','이','은','한','에','하','고','을','를','인','듯','과','와','네','들','듯','지','임','게']
-
 def _predict(text: str, model, tokenizer, mecab: MeCab) -> tuple[str, float]:
     text = re.sub(r"[^ㄱ-ㅎㅏ-ㅣ가-힣 ]", "", str(text))
     tokens = [token.surface for token in mecab.parse(text)]
-    tokens = [t for t in tokens if t not in _STOPWORDS]  # 추가!
     encoded = tokenizer.texts_to_sequences([tokens])
     padded = pad_sequences(encoded, maxlen=_MAX_LEN)
     score = round(float(model.predict(padded, verbose=0)), 4)
     sentiment = "positive" if score > 0.5 else "negative"
     return sentiment, score
-
 
 def run(args: argparse.Namespace) -> None:
     print("Loading model...")
