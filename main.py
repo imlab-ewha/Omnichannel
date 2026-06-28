@@ -1,140 +1,121 @@
 """
 main.py
 
-End-to-end pipeline: example_review.csv → scenario_assignment.csv
+End-to-end pipeline: data/example_review.csv → outputs/scenario_assignment/scenario_assignment.csv
 
 Usage:
-    python main.py [--input PATH] [--resource-dir DIR]
-
-Arguments:
-    --input         Path to input review CSV
-                    (default: resource/example_review.csv)
-    --resource-dir  Base directory for all intermediate and output files
-                    (default: resource/)
-
-Pipeline steps:
-  1. Aspect extraction         → resource/1_aspect_extraction/
-  2. Aspect normalization      → resource/2_aspect_normalization/
-  3. Aspect selection          → resource/3_aspect_selection/
-  4. Sentiment analysis        → resource/4_sentiment_analysis/
-  5. Overall satisfaction      → resource/5_overall_satisfaction/
-  6. Model training            → resource/6_aspect_contribution/
-  7. SHAP analysis             → resource/7_shap/
-  8. Aspect type determination → resource/8_aspect_type/
-  9. Scenario assignment       → resource/9_scenario/
+    python main.py [--input PATH] [--output-dir DIR]
 """
 
 import argparse
-import subprocess
-import sys
+import logging
 from pathlib import Path
 
-_SCRIPT_DIR = Path(__file__).resolve().parent
-_CODE_DIR   = _SCRIPT_DIR / "code"
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("openai").setLevel(logging.WARNING)
+
+import src.aspect_extraction                 as aspect_extraction
+import src.aspect_normalization              as aspect_normalization
+import src.aspect_selection                  as aspect_selection
+import src.sentiment_analysis                as sentiment_analysis
+import src.overall_satisfaction_combination  as overall_satisfaction_combination
+import src.regressor_training                as regressor_training
+import src.contribution_calculation          as contribution_calculation
+import src.type_determination                as type_determination
+import src.scenario_assignment               as scenario_assignment
+
+_ROOT = Path(__file__).resolve().parent
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="End-to-end omnichannel pipeline.")
-    parser.add_argument(
-        "--input",
-        type=Path,
-        default=_SCRIPT_DIR / "resource" / "example_review.csv",
-        help="Input review CSV.",
-    )
-    parser.add_argument(
-        "--resource-dir",
-        type=Path,
-        default=_SCRIPT_DIR / "resource",
-        help="Base directory for intermediate and output files.",
-    )
+    parser.add_argument("--input",      type=Path, default=_ROOT / "data" / "example_review.csv")
+    parser.add_argument("--output-dir", type=Path, default=_ROOT / "outputs")
     return parser.parse_args()
 
 
-def build_steps(input_csv: Path, r: Path) -> list[tuple[str, Path, str, list[str]]]:
-    return [
-        (
-            "Step 1 — Aspect extraction",
-            _CODE_DIR / "frequent_aspect_mining" / "aspect_extraction",
-            "aspect_extraction.py",
-            ["--input", str(input_csv),
-             "--output", str(r / "1_aspect_extraction")],
-        ),
-        (
-            "Step 2 — Aspect normalization",
-            _CODE_DIR / "frequent_aspect_mining" / "aspect_normalization",
-            "aspect_normalization.py",
-            ["--input", str(r / "1_aspect_extraction" / "aspect_extraction.csv"),
-             "--output-dir", str(r / "2_aspect_normalization")],
-        ),
-        (
-            "Step 3 — Aspect selection",
-            _CODE_DIR / "frequent_aspect_mining" / "aspect_selection",
-            "aspect_selection.py",
-            ["--input", str(r / "2_aspect_normalization"),
-             "--output-dir", str(r / "3_aspect_selection")],
-        ),
-        (
-            "Step 4 — Sentiment analysis",
-            _CODE_DIR / "aspect_contribution_pairs_mining" / "overall_satisfaction_score_combination",
-            "sentiment_analysis.py",
-            ["--input", str(input_csv),
-             "--output-dir", str(r / "4_sentiment_analysis")],
-        ),
-        (
-            "Step 5 — Overall satisfaction score",
-            _CODE_DIR / "aspect_contribution_pairs_mining" / "overall_satisfaction_score_combination",
-            "overall_satisfaction_score_combination.py",
-            ["--input", str(r / "4_sentiment_analysis" / "sentiment_analysis.csv"),
-             "--output-dir", str(r / "5_overall_satisfaction")],
-        ),
-        (
-            "Step 6 — Model training",
-            _CODE_DIR / "aspect_contribution_pairs_mining" / "aspect_contribution_calculation",
-            "model_training.py",
-            ["--satisfaction", str(r / "5_overall_satisfaction" / "overall_satisfaction.csv"),
-             "--top-aspects",  str(r / "3_aspect_selection" / "top_aspects.csv"),
-             "--reviews",      str(r / "3_aspect_selection" / "top_aspect_reviews.csv"),
-             "--output-dir",   str(r / "6_aspect_contribution")],
-        ),
-        (
-            "Step 7 — SHAP analysis",
-            _CODE_DIR / "aspect_contribution_pairs_mining" / "aspect_contribution_calculation",
-            "aspect_contribution_calculation.py",
-            ["--model-dir",  str(r / "6_aspect_contribution" / "models"),
-             "--output-dir", str(r / "7_shap")],
-        ),
-        (
-            "Step 8 — Aspect type determination",
-            _CODE_DIR / "strategy_development" / "aspect_type_determination",
-            "aspect_type_determination.py",
-            ["--aspects", str(r / "3_aspect_selection" / "top_aspects.csv"),
-             "--output",  str(r / "8_aspect_type" / "aspect_types.csv")],
-        ),
-        (
-            "Step 9 — Scenario assignment",
-            _CODE_DIR / "strategy_development" / "aspect_scenario_assignment",
-            "aspect_scenario_assignment.py",
-            ["--shap",       str(r / "7_shap" / "shap.csv"),
-             "--types",      str(r / "8_aspect_type" / "aspect_types.csv"),
-             "--output-dir", str(r / "9_scenario")],
-        ),
-    ]
+def main() -> None:
+    args = parse_args()
+    r    = args.output_dir.resolve()
 
+    print("\n" + "=" * 60)
+    print("  Step 1 — Aspect extraction")
+    print("=" * 60)
+    args1 = aspect_extraction.parse_args([])
+    args1.input  = args.input
+    args1.output = r / "aspect_extraction"
+    aspect_extraction.run(args1)
 
-def run_step(label: str, script_dir: Path, script: str, extra_args: list[str]) -> None:
-    print(f"\n{'=' * 60}")
-    print(f"  {label}")
-    print(f"{'=' * 60}")
-    subprocess.run([sys.executable, script] + extra_args, cwd=script_dir, check=True)
+    print("\n" + "=" * 60)
+    print("  Step 2 — Aspect normalization")
+    print("=" * 60)
+    args2 = aspect_normalization.parse_args([])
+    args2.input      = r / "aspect_extraction" / "aspect_extraction.csv"
+    args2.output_dir = r / "aspect_normalization"
+    aspect_normalization.run(args2)
+
+    print("\n" + "=" * 60)
+    print("  Step 3 — Aspect selection")
+    print("=" * 60)
+    args3 = aspect_selection.parse_args([])
+    args3.input      = r / "aspect_normalization"
+    args3.output_dir = r / "aspect_selection"
+    aspect_selection.run(args3)
+
+    print("\n" + "=" * 60)
+    print("  Step 4 — Sentiment analysis")
+    print("=" * 60)
+    args4 = sentiment_analysis.parse_args([])
+    args4.input      = args.input
+    args4.output_dir = r / "sentiment_analysis"
+    sentiment_analysis.run(args4)
+
+    print("\n" + "=" * 60)
+    print("  Step 5 — Overall satisfaction combination")
+    print("=" * 60)
+    args5 = overall_satisfaction_combination.parse_args([])
+    args5.input      = r / "sentiment_analysis" / "sentiment_analysis.csv"
+    args5.output_dir = r / "overall_satisfaction_combination"
+    overall_satisfaction_combination.run(args5)
+
+    print("\n" + "=" * 60)
+    print("  Step 6 — Regressor training")
+    print("=" * 60)
+    args6 = regressor_training.parse_args([])
+    args6.satisfaction = r / "overall_satisfaction_combination" / "overall_satisfaction.csv"
+    args6.top_aspects  = r / "aspect_selection" / "top_aspects.csv"
+    args6.reviews      = r / "aspect_selection" / "top_aspect_reviews.csv"
+    args6.output_dir   = r / "regressor_training"
+    regressor_training.run(args6)
+
+    print("\n" + "=" * 60)
+    print("  Step 7 — Contribution calculation")
+    print("=" * 60)
+    args7 = contribution_calculation.parse_args([])
+    args7.model_dir  = r / "regressor_training" / "models"
+    args7.output_dir = r / "contribution_calculation"
+    contribution_calculation.run(args7)
+
+    print("\n" + "=" * 60)
+    print("  Step 8 — Type determination")
+    print("=" * 60)
+    args8 = type_determination.parse_args([])
+    args8.aspects = r / "aspect_selection" / "top_aspects.csv"
+    args8.output  = r / "type_determination" / "aspect_types.csv"
+    type_determination.run(args8)
+
+    print("\n" + "=" * 60)
+    print("  Step 9 — Scenario assignment")
+    print("=" * 60)
+    args9 = scenario_assignment.parse_args([])
+    args9.shap       = r / "contribution_calculation" / "shap.csv"
+    args9.types      = r / "type_determination" / "aspect_types.csv"
+    args9.output_dir = r / "scenario_assignment"
+    scenario_assignment.run(args9)
+
+    print(f"\nPipeline complete.")
+    print(f"Final output: {r / 'scenario_assignment' / 'scenario_assignment.csv'}")
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    steps = build_steps(args.input, args.resource_dir)
-
-    for label, script_dir, script, extra_args in steps:
-        run_step(label, script_dir, script, extra_args)
-
-    output = args.resource_dir / "9_scenario" / "scenario_assignment.csv"
-    print(f"\nPipeline complete.")
-    print(f"Final output: {output}")
+    main()
